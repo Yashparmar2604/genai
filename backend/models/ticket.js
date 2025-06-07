@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import User from "./user";
+import User from "./user.js";
 
 const TicketSchema=new mongoose.Schema({
 
@@ -15,7 +15,7 @@ const TicketSchema=new mongoose.Schema({
         ref:User,
     },
     assignedTo:{
-        type:moongoose.Schema.Types.ObjectId,
+        type:mongoose.Schema.Types.ObjectId,
         ref:User,
         default:null
     },
