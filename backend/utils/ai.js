@@ -1,16 +1,13 @@
-import {createAgent,gemini} from "@inngest/agent-kit"
+import { createAgent, gemini } from "@inngest/agent-kit";
 
-
-const analyzeTicket=async(ticket)=>{
-
-    const supportAgent=createAgent({
-        model:gemini({
-            model:"gemini-1.5-flash-8b",
-            apiKey:process.env.GEMINI_API_KEY
-        }),
-
-        name:"AI Ticket Triage Assistant",
-        system:`You are an expert AI assistant that processes technical support tickets. 
+const analyzeTicket = async (ticket) => {
+  const supportAgent = createAgent({
+    model: gemini({
+      model: "gemini-1.5-flash-8b",
+      apiKey: process.env.GEMINI_API_KEY,
+    }),
+    name: "AI Ticket Triage Assistant",
+    system: `You are an expert AI assistant that processes technical support tickets. 
 
 Your job is to:
 1. Summarize the issue.
@@ -23,10 +20,11 @@ IMPORTANT:
 - Do NOT include markdown, code fences, comments, or any extra formatting.
 - The format must be a raw JSON object.
 
-Repeat: Do not wrap your output in markdown or code fences.`
-    })
+Repeat: Do not wrap your output in markdown or code fences.`,
+  });
 
-    const response=await supportAgent.run(`You are a ticket triage agent. Only return a strict JSON object with no extra text, headers, or markdown.
+  const response =
+    await supportAgent.run(`You are a ticket triage agent. Only return a strict JSON object with no extra text, headers, or markdown.
         
 Analyze the following support ticket and provide a JSON object with:
 
@@ -52,21 +50,22 @@ Ticket information:
 - Description: ${ticket.description}`);
 
 
-const raw=response.output[0].context;
 
-try {
 
+
+  const raw = response.output[0].content;
+
+
+
+  try {
     const match = raw.match(/```json\s*([\s\S]*?)\s*```/i);
     const jsonString = match ? match[1] : raw.trim();
+    
     return JSON.parse(jsonString);
-    
-} catch (e) {
-
+  } catch (e) {
     console.log("Failed to parse JSON from AI response" + e.message);
-    return null;
-    
-}
-}
-
+    return null; // watch out for this
+  }
+};
 
 export default analyzeTicket;
