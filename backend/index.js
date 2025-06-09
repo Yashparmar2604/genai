@@ -28,15 +28,27 @@ app.use("/api/inngest",serve({
 }))
 
 
-mongoose.connect(process.env.MONGO_URI)
-    .then(()=>{
-        console.log("Connected to MongoDB");
-        app.listen(process.env.PORT,()=>{
-            console.log(`Server is running on port ${process.env.PORT}`);
-        })
-    }).catch((error)=>{
-        console.error("Error connecting to MongoDB:", error);
+mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+    family: 4 // Use IPv4, skip trying IPv6
+})
+.then(() => {
+    console.log("Connected to MongoDB Atlas");
+    app.listen(process.env.PORT, () => {
+        console.log(`Server is running on port ${process.env.PORT}`);
     });
+})
+.catch((error) => {
+    console.error("MongoDB Connection Error:", {
+        message: error.message,
+        code: error.code,
+        uri: process.env.MONGO_URI.replace(/:([^@]+)@/, ':****@')
+    });
+    process.exit(1);
+});
+
 
 
 

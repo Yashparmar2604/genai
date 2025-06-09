@@ -170,7 +170,7 @@ const handleSignup = async (e) => {
               >
                 <option value="user">Regular User</option>
                 <option value="moderator">Support Moderator</option>
-                <option value="admin">Admin User</option>
+                
               </select>
             </div>
 
