@@ -6,7 +6,7 @@ export default function SignupPage() {
     name: "",
     email: "",
     password: "",
-    role: "",
+    role: "user",
     skills: []
   });
 
@@ -38,42 +38,55 @@ export default function SignupPage() {
     setError("");
   };
 
-  const handleSignup = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+const handleSignup = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setError("");
 
-    try {
-      validateForm();
+  try {
+    validateForm();
 
-      const res = await fetch(
-        `${import.meta.env.VITE_SERVER_URL}/auth/signup`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(form),
-        }
-      );
+    // Create request body based on role
+    const requestBody = {
+      name: form.name.trim(),
+      email: form.email.trim(),
+      password: form.password,
+      role: form.role
+    };
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Signup failed");
-      }
-
-      // Store user data and redirect
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-      navigate("/");
-    } catch (err) {
-      setError(err.message);
-      console.error("Signup error:", err);
-    } finally {
-      setLoading(false);
+    // Only include skills if role is moderator
+    if (form.role === "moderator") {
+      requestBody.skills = form.skills;
     }
-  };
+
+    const res = await fetch(
+      `${import.meta.env.VITE_SERVER_URL}/auth/signup`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      }
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || "Signup failed");
+    }
+
+    // Store user data and redirect
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("user", JSON.stringify(data.user));
+    navigate("/");
+  } catch (err) {
+    setError(err.message);
+    console.error("Signup error:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const renderField = ({ name, label, type = "text", placeholder, required = true, minLength }) => (
     <div className="form-control">
