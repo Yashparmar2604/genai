@@ -44,7 +44,7 @@ export const getTickets = async (req, res) => {
         .populate("assignedTo", ["email", "name", "_id"])
         .sort({ createdAt: -1 });
     } else {
-      tickets = await Ticket.find({ createdBy: user._id })
+      tickets = await Ticket.find({})
         .select("title description status createdAt")
         .populate("assignedTo", ["name"])
         .sort({ createdAt: -1 });
@@ -58,36 +58,39 @@ export const getTickets = async (req, res) => {
 
 export const getTicket = async (req, res) => {
   try {
+    const { id } = req.params;
     const user = req.user;
     let ticket;
 
-    if (user.role !== "user") {
-      ticket = await Ticket.findById(req.params.id)
-        .populate("assignedTo", ["email", "name"])
-        .lean(); // Convert to plain object
+    if (user.role === "admin") {
+      ticket = await Ticket.findById(id)
+        .populate("assignedTo", ["name", "email", "_id"])
+        .populate("createdBy", ["name", "email"]);
     } else {
-      // Added await here
       ticket = await Ticket.findOne({
-        createdBy: user._id,
-        _id: req.params.id,
+        $or: [
+          { createdBy: user._id },
+          { assignedTo: user._id }
+        ],
+        _id: id
       })
-        .select(
-          "title description status createdAt priority helpfulNotes relatedSkills"
-        )
-        .lean(); // Convert to plain object
+      .populate("assignedTo", ["name", "email", "_id"])
+      .populate("createdBy", ["name", "email"]);
     }
 
     if (!ticket) {
       return res.status(404).json({ message: "Ticket not found" });
     }
 
-    console.log(ticket);
     return res.status(200).json(ticket);
   } catch (error) {
     console.error("Error fetching ticket:", error.message);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+
+
 
 export const updateTicketStatus = async (req, res) => {
   try {

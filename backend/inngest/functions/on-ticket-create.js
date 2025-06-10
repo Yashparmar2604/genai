@@ -29,7 +29,7 @@ export const onTicketCreated = inngest.createFunction(
 
       const aiResponse = await analyzeTicket(ticket);
 
-      console.log(aiResponse);
+      
          
       const relatedskills = await step.run("ai-processing", async () => {
         let skills = [];
@@ -49,27 +49,53 @@ export const onTicketCreated = inngest.createFunction(
 
       
 
-      const moderator = await step.run("assign-moderator", async () => {
-        let user = await User.findOne({
-          role: "moderator",
-          skills: {
-            $elemMatch: {
-              $regex: relatedskills.join("|"),
-              $options: "i",
-            },
-          },
-        });
-        if (!user) {
-          user = await User.findOne({
-            role: "admin",
-          });
-        }
-        await Ticket.findByIdAndUpdate(ticket._id, {
-          assignedTo: user?._id || null,
-        });
-        return user;
+const moderator = await step.run("assign-moderator", async () => {
+  try {
+    // First try to find a moderator with matching skills
+    let user = await User.findOne({
+      role: "moderator",
+      skills: {
+        $in: relatedskills.map(skill => new RegExp(skill, 'i'))
+      }
+    });
+
+    if (!user) {
+      user = await User.findOne({ role: "moderator" });
+    }
+
+    if (!user) {
+      user = await User.findOne({ role: "admin" });
+    }
+
+    if (user) {
+      const updatedTicket = await Ticket.findByIdAndUpdate(
+        ticket._id,
+        {
+          assignedTo: user._id,
+          status: "IN_PROGRESS"
+        },
+        { new: true }
+      ).populate({
+        path: 'assignedTo',
+        select: 'name email _id'
       });
 
+      console.log("Assigned moderator:", {
+        moderatorId: user._id,
+        moderatorName: user.name,
+        ticketId: ticket._id
+      });
+
+      return user;
+    } else {
+      console.log("No moderator or admin found to assign ticket:", ticket._id);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error assigning moderator:", error);
+    throw error;
+  }
+});
       
 
       await step.run("send-email-notification", async () => {

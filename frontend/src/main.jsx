@@ -19,14 +19,15 @@ export const PATHS = {
   TICKETS: {
     LIST: "/",
     DETAIL: "/tickets/:id",
-    CREATE: "/create-ticket"
+    CREATE: "/create-ticket",
+    USER: "/user-tickets",
   },
   MODERATOR: "/moderator",
   ADMIN: "/admin",
   AUTH: {
     LOGIN: "/login",
-    SIGNUP: "/signup"
-  }
+    SIGNUP: "/signup",
+  },
 };
 
 // Error Boundary Component
@@ -91,7 +92,9 @@ function NotFoundPage() {
         </svg>
         <div>
           <h3 className="font-bold">Page Not Found</h3>
-          <div className="text-sm">The page you're looking for doesn't exist.</div>
+          <div className="text-sm">
+            The page you're looking for doesn't exist.
+          </div>
         </div>
       </div>
     </div>
@@ -110,15 +113,15 @@ function AppComponent() {
               duration: 5000,
               success: {
                 className: "bg-success text-success-content",
-                duration: 3000
+                duration: 3000,
               },
               error: {
                 className: "bg-error text-error-content",
-                duration: 7000
+                duration: 7000,
               },
               loading: {
-                className: "bg-info text-info-content"
-              }
+                className: "bg-info text-info-content",
+              },
             }}
           />
           <Navbar paths={PATHS} />
@@ -127,7 +130,9 @@ function AppComponent() {
               <Route
                 path={PATHS.HOME}
                 element={
-                  <RoleProtectedRoute allowedRoles={["user", "moderator", "admin"]}>
+                  <RoleProtectedRoute
+                    allowedRoles={["user", "moderator", "admin"]}
+                  >
                     <Tickets />
                   </RoleProtectedRoute>
                 }
@@ -135,8 +140,20 @@ function AppComponent() {
               <Route
                 path={PATHS.TICKETS.DETAIL}
                 element={
-                  <RoleProtectedRoute allowedRoles={["user", "moderator", "admin"]}>
+                  <RoleProtectedRoute
+                    allowedRoles={["user", "moderator", "admin"]}
+                  >
                     <TicketDetailsPage />
+                  </RoleProtectedRoute>
+                }
+              />
+              <Route
+                path={PATHS.TICKETS.USER}
+                element={
+                  <RoleProtectedRoute
+                    allowedRoles={["user"]}
+                  >
+                    <Tickets />
                   </RoleProtectedRoute>
                 }
               />
@@ -164,6 +181,9 @@ function AppComponent() {
                   </RoleProtectedRoute>
                 }
               />
+
+             
+            
               <Route path={PATHS.AUTH.LOGIN} element={<Login />} />
               <Route path={PATHS.AUTH.SIGNUP} element={<Signup />} />
               <Route path="*" element={<NotFoundPage />} />

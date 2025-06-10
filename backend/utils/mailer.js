@@ -1,17 +1,21 @@
 import nodemailer from "nodemailer";
 
-const isProduction = false;
+const isProduction = process.env.NODE_ENV;
+
+
 
 export const sendMail = async(to, subject, text) => {
     try {
+
+        console.log(process.env.NODE_ENV);
         const transporter = nodemailer.createTransport(
-            isProduction ? 
+            process.env.NODE_ENV ? 
             {
                 // Production Gmail configuration
                 service: 'gmail',
                 auth: {
-                    user: "yp842694@gmail.com",
-                    pass: "rncdxqancoyzcwpr"
+                    user: process.env.GMAIL_USER,
+                    pass: process.env.GMAIL_PASS,
                 }
             } : 
             {
@@ -35,7 +39,7 @@ export const sendMail = async(to, subject, text) => {
             text,
         });
 
-        console.log(`Email sent ${isProduction ? 'to recipient' : 'to Mailtrap'}: ${info.messageId}`);
+        console.log(`Email sent ${process.env.NODE_ENV ? 'to recipient' : 'to Mailtrap'}: ${info.messageId}`);
         return info;
         
     } catch (error) {
