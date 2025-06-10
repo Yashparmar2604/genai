@@ -19,12 +19,15 @@ export const signup= async(req,res)=>{
         skills,
     })
 
-    await inngest.send({
-        name:"user/signup",
-        data:{
-            email
-        }
-    });
+   try {
+      await inngest.send({
+        name: "user/signup",
+        data: { email }
+      });
+    } catch (inngestError) {
+     
+      console.error("Inngest event error:", inngestError);
+    }
 
     const token=jwt.sign(
         {_id:user._id, role:user.role},

@@ -24,7 +24,8 @@ app.use("/api/tickets",ticketRoutes);
 
 app.use("/api/inngest",serve({
     client:inngest,
-    functions:[onUserSignup,onTicketCreated]
+    functions:[onUserSignup,onTicketCreated],
+    signingKey: process.env.INNGEST_SIGNING_KEY
 }))
 
 

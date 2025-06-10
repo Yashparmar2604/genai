@@ -5,7 +5,7 @@ import { NonRetriableError } from "inngest";
 import { sendMail } from "../../utils/mailer.js";
 
 export const onUserSignup = inngest.createFunction(
-  { id: "on-user-signup", retries: 2 },
+  { id: "on-user-signup", retries: 2},
   { event: "user/signup" },
 
   async ({ event, step }) => {
